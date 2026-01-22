@@ -8,14 +8,14 @@ from flask import Flask
 
 # ================= CONFIG =================
 
-API_ID = int(os.getenv("31791633"))
-API_HASH = os.getenv("fe81844782af0bd9aa73e606c24da2c9")
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
 
-GRUPO_ORIGEM = int(os.getenv("-1003228431851", "0"))
-GRUPO_DESTINO = int(os.getenv("-1003267506725", "0"))
-ADMIN_ID = int(os.getenv("1785910641"))
+GRUPO_ORIGEM = int(os.getenv("GRUPO_ORIGEM", "0"))
+GRUPO_DESTINO = int(os.getenv("GRUPO_DESTINO", "0"))
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
-DRIVE_FOLDER_ID = os.getenv("1BJmSekM9aGm6n7wSnaDHsgEZlkejaB4k")
+DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
 
 ARQ_MENSAL = "mensalidades.json"
 ARQ_EXCEL = "mensalidades.xlsx"
