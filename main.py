@@ -1,17 +1,18 @@
-from telethon import TelegramClient, events, errors
-import asyncio, time, json, os, re, logging
+from telethon import TelegramClient, events
+import asyncio, time, json, os, logging, threading
 from openpyxl import Workbook
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from flask import Flask
 
 # ================= CONFIG =================
 
 API_ID = int(os.getenv("31791633"))
 API_HASH = os.getenv("fe81844782af0bd9aa73e606c24da2c9")
 
-GRUPO_ORIGEM = int(os.getenv("-1003228431851"))
-GRUPO_DESTINO = int(os.getenv("-1003267506725"))
+GRUPO_ORIGEM = int(os.getenv("-1003228431851", "0"))
+GRUPO_DESTINO = int(os.getenv("-1003267506725", "0"))
 ADMIN_ID = int(os.getenv("1785910641"))
 
 DRIVE_FOLDER_ID = os.getenv("1BJmSekM9aGm6n7wSnaDHsgEZlkejaB4k")
@@ -43,7 +44,6 @@ def gerar_excel():
     wb = Workbook()
     ws = wb.active
     ws.title = "Mensalidades"
-
     ws.append(["User ID", "Username", "Vencimento"])
 
     for uid, d in mensalidades.items():
@@ -69,14 +69,11 @@ def enviar_drive():
     )
 
     service.files().create(
-        body={
-            "name": ARQ_EXCEL,
-            "parents": [DRIVE_FOLDER_ID]
-        },
+        body={"name": ARQ_EXCEL, "parents": [DRIVE_FOLDER_ID]},
         media_body=media
     ).execute()
 
-# ================= START =================
+# ================= BOT =================
 
 @client.on(events.NewMessage(from_users=ADMIN_ID, pattern=r"/ativar"))
 async def ativar(event):
@@ -91,9 +88,7 @@ async def ativar(event):
         return await event.reply("Dias inválidos")
 
     user = await client.get_entity(alvo)
-    agora = time.time()
-
-    venc = agora + (dias * 86400)
+    venc = time.time() + dias * 86400
 
     mensalidades[str(user.id)] = {
         "username": f"@{user.username}" if user.username else user.first_name,
@@ -117,5 +112,21 @@ async def main():
     print("✅ BOT ONLINE")
     await client.run_until_disconnected()
 
-if __name__ == "__main__":
+# ================= WEB (RENDER FREE) =================
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bot Telegram Online"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+def start_all():
+    threading.Thread(target=run_web).start()
     asyncio.run(main())
+
+if __name__ == "__main__":
+    start_all()
